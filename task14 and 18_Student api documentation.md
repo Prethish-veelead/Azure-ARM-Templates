@@ -46,7 +46,55 @@ http://localhost:7071/api/students
 ```
 
 ---
+```
+import azure.functions as func
+import json
 
+app = func.FunctionApp()
+
+@app.route(route="students", auth_level=func.AuthLevel.ANONYMOUS)
+def student_api(req: func.HttpRequest) -> func.HttpResponse:
+
+    # Mini student database
+    students = {
+        "1": {"id": "1", "name": "Arun Kumar",   "course": "Cloud Computing", "grade": "A", "status": "Active"},
+        "2": {"id": "2", "name": "Priya Sharma",  "course": "Data Science",    "grade": "B", "status": "Active"},
+        "3": {"id": "3", "name": "Rahul Verma",   "course": "Cybersecurity",   "grade": "A", "status": "Inactive"},
+    }
+
+    # Get id from query param
+    student_id = req.params.get("id")
+
+    if not student_id:
+        try:
+            body = req.get_json()
+            student_id = body.get("id")
+        except:
+            pass
+
+    # Return all students if no ID given
+    if not student_id:
+        return func.HttpResponse(
+            body=json.dumps({"students": list(students.values()), "total": len(students)}),
+            mimetype="application/json",
+            status_code=200
+        )
+
+    # Return specific student
+    if student_id in students:
+        return func.HttpResponse(
+            body=json.dumps(students[student_id]),
+            mimetype="application/json",
+            status_code=200
+        )
+
+    # Not found
+    return func.HttpResponse(
+        body=json.dumps({"error": f"Student with id '{student_id}' not found"}),
+        mimetype="application/json",
+        status_code=404
+    )
+```
 ### 2. Get Student by ID
 
 Returns a single student record matching the given ID.
@@ -253,3 +301,7 @@ pip install -r requirements.txt
 ---
 *Generated using Claude Desktop — Day 9 Practice, Task 18*
 *Internship Project — Phase 2: Azure Functions*
+<img width="1918" height="313" alt="image" src="https://github.com/user-attachments/assets/573d00f8-1e64-48e3-b16f-bc52ae3471ed" />
+<img width="1179" height="288" alt="image" src="https://github.com/user-attachments/assets/77c31c91-9af4-4f7b-80c2-2f7f021c8d65" />
+
+
